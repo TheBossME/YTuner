@@ -17,50 +17,55 @@ uses
   cthreads, cmem,
   {$ENDIF}
   LazUTF8,
-  Classes, SysUtils, IniFiles, StrUtils, TypInfo, FileUtil,
+  Classes, SysUtils, StrUtils, TypInfo, FileUtil,
   fphttpapp,
   {$IFDEF USESSL}
   openssl, opensslsockets,
   {$ENDIF}
   regexpr, my_stations, vtuner, httpserver, radiobrowser, common, bookmark,
-  dnsserver, threadtimer, avr, maintenance, radiobrowserdb;
+  dnsserver, threadtimer, avr, maintenance, radiobrowserdb, stationsmanager, stations_xml_io;
 
 // {$DEFINE FREE_ON_FINAL}
 // Enable the FREE_ON_FINAL directive in IdCompilerDefines.inc of Indy library to remove standard (ie, intentional) Indy memory leaks.
 // Look at the comments in the finalization sections of IdThread.pas and IdStack.pas.
 // Due to the fact described above YTuner has 3 unfreed memory blocks : 120.
 
+{$WARN 5024 OFF}
 function GetRBStationsUUIDsThread(AP:Pointer):PtrInt;
 begin
   GetRBStationsUUIDs;
 end;
+{$WARN 5024 ON}
 
+{$WARN 5024 OFF}
 procedure RBStationsUUIDsRefreshOnTimer(Sender: TObject);
 begin
   BeginThread(@GetRBStationsUUIDsThread);
 end;
+{$WARN 5024 ON}
 
+{$WARN 5024 OFF}
 function DBRBPrepareThread(AP:Pointer):PtrInt;
 begin
   if DBRBPrepare then
     DBRBCheckAVRView(0);
 end;
+{$WARN 5024 ON}
 
+{$WARN 5024 OFF}
 procedure RBStationsDBRefreshOnTimer(Sender: TObject);
 begin
   BeginThread(@DBRBPrepareThread);
 end;
+{$WARN 5024 ON}
 
-function ReadMyStations: boolean;
-begin
-  case IndexStr(ExtractFileExt(ConfigPath+DirectorySeparator+MyStationsFileName),MY_STATIONS_EXT) of
-    0: Result:=ReadMyStationsINIFile(ConfigPath+DirectorySeparator+MyStationsFileName);
-    1,2: Result:=ReadMyStationsYAMLFile(ConfigPath+DirectorySeparator+MyStationsFileName);
-  else
-    Result:=False;
-  end;
-end;
 
+
+{$WARN 5024 ON}
+
+
+
+{$WARN 5024 OFF}
 function CheckMyStationsThread(AP:Pointer):PtrInt;
 var
   LMyStationsFileAge: Int64;
@@ -92,11 +97,14 @@ begin
       Logging(ltError, 'CheckMyStationsThread Error: '+E.Message);
   end;
 end;
+{$WARN 5024 ON}
 
+{$WARN 5024 OFF}
 procedure MyStationsRefreshOnTimer(Sender: TObject);
 begin
   BeginThread(@CheckMyStationsThread);
 end;
+{$WARN 5024 ON}
 
 procedure ReadINIConfiguration;
 var
@@ -358,8 +366,28 @@ begin
   SetHeapTraceOutput('heap.trc');
   {$ENDIF DEBUG}
   MyAppPath:=GetMyAppPath;
+  if not DirectoryExists(MyAppPath + 'web') then
+    CreateDir(MyAppPath + 'web');
   Writeln(APP_NAME+' v'+APP_VERSION+' '+APP_COPYRIGHT);
   ReadINIConfiguration;
+  if not FileExists(ConfigPath + DirectorySeparator + MY_STATIONS_FILE_NANME) then
+  begin
+    LIniFileName := ConfigPath + DirectorySeparator + 'stations.ini';
+    LYamlFileName := ConfigPath + DirectorySeparator + 'stations.yml';
+    LXmlFileName := ConfigPath + DirectorySeparator + MY_STATIONS_FILE_NANME;
+
+    if FileExists(LIniFileName) then
+    begin
+      ConvertIniToXml(LIniFileName, LXmlFileName);
+      DeleteFile(LIniFileName);
+    end
+    else if FileExists(LYamlFileName) then
+    begin
+      ConvertYamlToXml(LYamlFileName, LXmlFileName);
+      DeleteFile(LYamlFileName);
+    end;
+  end;
+
 
   if not DirectoryExists(CachePath) then CreateDir(CachePath);
   if not DirectoryExists(ConfigPath) then CreateDir(ConfigPath);

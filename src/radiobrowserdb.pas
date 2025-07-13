@@ -4,6 +4,7 @@ unit radiobrowserdb;
 
 {$mode ObjFPC}{$H+}
 
+{$WARN 6060 OFF}
 {$IFDEF WINDOWS}
 {$R ..\res\sql.rc}
 {$ELSE}
@@ -14,7 +15,7 @@ interface
 
 uses
   Classes, StrUtils, SysUtils,
-  SQLDB, SQLite3Conn, SQLite3, SQLite3Backup,
+  SQLDB, SQLite3Conn, SQLite3Backup,
   radiobrowser;
 
 const
@@ -119,6 +120,7 @@ var
 
 implementation
 
+{$WARN 6060 ON}
 uses common, avr, ResStreamUnZipper;
 
 function DBRBValid: boolean;
@@ -127,18 +129,20 @@ var
 begin
   Result:=False;
   case RBCacheType of
-    catDB, catPermMemDB:
-      begin
-        LDBFileName:=DBPath+DirectorySeparator+RBDBFILE_NAME;
-        try
-          Result:=(FileExists(LDBFileName) and ((RBCacheTTL<=0) or (FileDateToDateTime(FileAge(LDBFileName))+(RBCacheTTL/24) > Now)));
-        except
-          Result:=False;
-        end;
+        catDB, catPermMemDB:
+          begin
+            LDBFileName:=DBPath+DirectorySeparator+RBDBFILE_NAME;
+            try
+              Result:=(FileExists(LDBFileName) and ((RBCacheTTL<=0) or (FileDateToDateTime(FileAge(LDBFileName))+(RBCacheTTL/24) > Now)));
+            except
+              Result:=False;
+            end;
+          end;
+        catMemDB:
+          Result:=(Assigned(DBRBMainConnection) and ((RBCacheTTL<=0) or (RBDBCreationDateTime+(RBCacheTTL/24) > Now)));
+        else
+          Result := false;
       end;
-    catMemDB:
-      Result:=(Assigned(DBRBMainConnection) and ((RBCacheTTL<=0) or (RBDBCreationDateTime+(RBCacheTTL/24) > Now)));
-  end;
 end;
 
 function DBRBPrepareDBConnection(ADBConnection: TSQLite3Connection; ADBFileName: string; ATag: integer): boolean;
@@ -378,6 +382,8 @@ begin
                       Free;
                     end;
             end;
+            else
+              LMainDBConnectionReady := false;
         end;
         if LMainDBConnectionReady then
           begin
@@ -399,6 +405,8 @@ begin
                   LDBFileName:=DBPath+DirectorySeparator+RBDB1FILE_NAME;
                   LTag:=1;
                 end;
+              else
+                LDBConnectionReady := false;
             end;
             LDBConnectionReady:=CheckAndPrepareDBConnection;
           end;
@@ -419,6 +427,8 @@ begin
               end;
               LTag:=(DBRBMainConnection.Tag mod 2)+1;
             end;
+          else
+            LDBConnectionReady := false;
         end;
         LDBConnectionReady:=CheckAndPrepareDBConnection;
       end;
@@ -550,6 +560,8 @@ begin
                         Free;
                       end;
                 end;
+                else
+                  Result := MainRBDBConnect;
             end;
             Result:=MainRBDBConnect;
             if Result then

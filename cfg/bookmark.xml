@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Bookmark>
+  <Version>1.1</Version>
+  <ListOfItems>
+    <Item id="RBB1FF60CE0A974" idx="0">
+      <Name>88.6 On Air</Name>
+      <URL>http://radio886.at/streams/radio_88.6/mp3</URL>
+      <URLResolved>http://edge84.streamonkey.net/radio886-onair/stream/mp3</URLResolved>
+      <Description>88.6 On Air</Description>
+      <Logo/>
+      <Genres>Metal,rock</Genres>
+      <Languages>German</Languages>
+      <Location>Austria</Location>
+      <Mime>audio/mpeg</Mime>
+      <Codec>MP3</Codec>
+      <Bitrate>128</Bitrate>
+      <LastCheckedOK>1</LastCheckedOK>
+      <LastCheckedOKTime>2025-06-28 15:45:12</LastCheckedOKTime>
+      <LastCheckedTime>2025-06-28 15:45:12</LastCheckedTime>
+    </Item>
+  </ListOfItems>
+</Bookmark>

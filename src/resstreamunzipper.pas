@@ -27,23 +27,29 @@ implementation
 
 uses common;
 
+{$WARN 5024 OFF}
 procedure TResStreamUnZipper.DoCreateStream(Sender: TObject; var AStream: TStream; AItem: TFullZipFileEntry);
 begin
   FOutputStream:=TMemoryStream.Create;
   AStream:=FOutputStream;
 end;
+{$WARN 5024 ON}
 
+{$WARN 5024 OFF}
 procedure TResStreamUnZipper.DoDoneStream(Sender: TObject; var AStream: TStream; AItem: TFullZipFileEntry);
 begin
   AStream.Position:=0;
   FResultStream.CopyFrom(AStream,AStream.Size);
   AStream.Free;
 end;
+{$WARN 5024 ON}
 
+{$WARN 5024 OFF}
 procedure TResStreamUnZipper.DoOpenInputStream(Sender: TObject; var AStream: TStream);
 begin
   AStream:=FInputStream;
 end;
+{$WARN 5024 ON}
 
 function TResStreamUnZipper.UnZip(const Input: TResourceStream; var Output: TMemoryStream): boolean;
 begin

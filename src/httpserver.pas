@@ -128,8 +128,12 @@ procedure DisplayMessage(AMessage: string; var ARes: TResponse);
 
 implementation
 
+uses
+  stationsmanager;
+
 procedure RegisterServerRoutes;
 begin
+  StationsManager.RegisterHandlers(HTTPRouter.HTTPServer);
   HTTPRouter.RegisterRoute('/', @DefaultPage, true);
   HTTPRouter.RegisterRoute('/'+PATH_SETUPAPP+'/*/'+PATH_LOGINXML_ASP, @SetupAppLoginXMLPage, false);
   HTTPRouter.RegisterRoute('/'+PATH_SETUPAPP+'/*/'+PATH_STATXML_ASP, @GetStation, false);

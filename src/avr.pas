@@ -146,6 +146,8 @@ begin
                   case RBCacheType of
                     catFile: LoadRBCacheFilesInfo(Result);
                     catDB, catMemDB, catPermMemDB: DBRBCheckAVRView(Result);
+                  else
+                    
                   end;
               finally
                 if Result<0 then                               //INI error.

@@ -160,6 +160,7 @@ begin
     end;
 end;
 
+{$WARN 5024 OFF}
 function TranslateThread(AP:Pointer):PtrInt;
 var
   LTranslatorIdx: integer;
@@ -171,6 +172,7 @@ var
   LFailureAttempts: integer = 0;
 
 begin
+  Result := 0;
   repeat
     LKeepTranslate:=False;
     with GTThread do
@@ -316,10 +318,12 @@ begin
   GTThread.Processing:=False;
 end;
 
+{$WARN 5024 OFF}
 procedure TranslatorOnTimer(Sender: TObject);
 begin
   BeginThread(@TranslateThread);
 end;
+{$WARN 5024 ON}
 
 function AddNameToTranslatorFile(AName: string; ATranslatorIdx: integer): boolean;
 var

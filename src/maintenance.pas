@@ -55,11 +55,14 @@ begin
     end;
 end;
 
+{$WARN 5024 OFF}
 function MaintenaceHTTPServerThread(AP:Pointer):PtrInt;
 begin
+  Result := 0;
   Logging(ltInfo, MAINTENANCE_SERVICE+': listening on: '+MaintenanceServerIPAddress+':'+MaintenanceServerPort.ToString);
   StartMaintenaceHTTPServer;
 end;
+{$WARN 5024 ON}
 
 constructor TMaintenaceHTTPServer.Create;
 begin

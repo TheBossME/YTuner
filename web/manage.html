@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YTuner Station Manager</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .col { float: left; width: 33.33%; padding: 1em; box-sizing: border-box; }
+        .col-full { float: none; width: 100%; }
+        h1, h2 { color: #333; }
+        #stations-list, #category-list { list-style-type: none; padding: 0; }
+        #stations-list li, #category-list li { padding: 8px; margin-bottom: 5px; background-color: #f4f4f4; border-radius: 3px; }
+        #stations-list li:hover, #category-list li.selected { background-color: #e0e0e0; cursor: pointer; }
+        .form-input { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        .btn { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        .btn:hover { background-color: #0056b3; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>YTuner Station Manager</h1>
+        <div class="col">
+            <h2>Categories</h2>
+            <ul id="category-list"></ul>
+            <input type="text" id="category-name" class="form-input" placeholder="New category name">
+            <button id="add-category" class="btn">Add Category</button>
+            <button id="remove-category" class="btn">Remove Selected</button>
+        </div>
+        <div class="col">
+            <h2>Stations</h2>
+            <ul id="stations-list"></ul>
+             <button id="remove-station" class="btn">Remove Selected</button>
+        </div>
+        <div class="col">
+            <h2>Station Details</h2>
+            <form id="station-form">
+                <input type="hidden" id="station-id">
+                <input type="text" id="station-name" class="form-input" placeholder="Station Name">
+                <input type="text" id="station-url" class="form-input" placeholder="Stream URL">
+                <input type="text" id="station-logo" class="form-input" placeholder="Logo URL">
+                <textarea id="station-desc" class="form-input" placeholder="Description"></textarea>
+                <button type="submit" class="btn">Save Station</button>
+                 <button type="button" id="clear-form" class="btn">Clear</button>
+            </form>
+        </div>
+        <div class="col-full">
+            <h2>Import / Export</h2>
+            <input type="file" id="import-xml-file" accept=".xml" class="hidden">
+            <button id="import-xml" class="btn">Import XML</button>
+            <button id="export-xml" class="btn">Export XML</button>
+            <input type="file" id="import-ini-file" accept=".ini" class="hidden">
+            <button id="import-ini" class="btn">Import INI</button>
+            <button id="export-ini" class="btn">Export INI</button>
+            <input type="file" id="import-yaml-file" accept=".yaml,.yml" class="hidden">
+            <button id="import-yaml" class="btn">Import YAML</button>
+            <button id="export-yaml" class="btn">Export YAML</button>
+        </div>
+         <div class="col-full">
+            <h2>Search</h2>
+            <input type="text" id="search-term" class="form-input" placeholder="Search term">
+            <button id="search-radiobrowser" class="btn">Search RadioBrowser</button>
+            <button id="search-tunein" class="btn">Search TuneIn</button>
+            <ul id="search-results"></ul>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const categoryList = document.getElementById('category-list');
+            const addCategoryBtn = document.getElementById('add-category');
+            const removeCategoryBtn = document.getElementById('remove-category');
+            const categoryNameInput = document.getElementById('category-name');
+
+            function loadCategories() {
+                fetch('/api/categories')
+                    .then(response => response.json())
+                    .then(data => {
+                        categoryList.innerHTML = '';
+                        data.forEach(category => {
+                            const li = document.createElement('li');
+                            li.textContent = category.name;
+                            li.dataset.name = category.name;
+                            categoryList.appendChild(li);
+                        });
+                    });
+            }
+
+            addCategoryBtn.addEventListener('click', function() {
+                const name = categoryNameInput.value.trim();
+                if (name) {
+                    fetch('/api/categories', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `name=${encodeURIComponent(name)}`
+                    })
+                    .then(() => {
+                        categoryNameInput.value = '';
+                        loadCategories();
+                    });
+                }
+            });
+
+            removeCategoryBtn.addEventListener('click', function() {
+                const selected = categoryList.querySelector('.selected');
+                if (selected) {
+                    const name = selected.dataset.name;
+                    fetch('/api/categories/delete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `name=${encodeURIComponent(name)}`
+                    })
+                    .then(() => {
+                        loadCategories();
+                    });
+                }
+            });
+
+            categoryList.addEventListener('click', function(e) {
+                if (e.target.tagName === 'LI') {
+                    const selected = categoryList.querySelector('.selected');
+                    if (selected) {
+                        selected.classList.remove('selected');
+                    }
+                    e.target.classList.add('selected');
+                    loadStations(e.target.dataset.name);
+                }
+            });
+
+            function loadStations(categoryName) {
+                const stationList = document.getElementById('stations-list');
+                fetch(`/api/stations?category=${encodeURIComponent(categoryName)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        stationList.innerHTML = '';
+                        data.forEach(station => {
+                            const li = document.createElement('li');
+                            li.textContent = station.name;
+                            li.dataset.id = station.id;
+                            li.dataset.name = station.name;
+                            li.dataset.url = station.url;
+                            li.dataset.logo = station.logo;
+                            stationList.appendChild(li);
+                        });
+                    });
+            }
+
+            const stationList = document.getElementById('stations-list');
+            const stationForm = document.getElementById('station-form');
+            const stationIdInput = document.getElementById('station-id');
+            const stationNameInput = document.getElementById('station-name');
+            const stationUrlInput = document.getElementById('station-url');
+            const stationLogoInput = document.getElementById('station-logo');
+            const stationDescInput = document.getElementById('station-desc');
+            const clearFormBtn = document.getElementById('clear-form');
+            const removeStationBtn = document.getElementById('remove-station');
+
+            stationList.addEventListener('click', function(e) {
+                if (e.target.tagName === 'LI') {
+                    const selected = stationList.querySelector('.selected');
+                    if (selected) {
+                        selected.classList.remove('selected');
+                    }
+                    e.target.classList.add('selected');
+                    stationIdInput.value = e.target.dataset.id;
+                    stationNameInput.value = e.target.dataset.name;
+                    stationUrlInput.value = e.target.dataset.url;
+                    stationLogoInput.value = e.target.dataset.logo;
+                }
+            });
+
+            stationForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const selectedCategory = categoryList.querySelector('.selected');
+                if (!selectedCategory) {
+                    alert('Please select a category first.');
+                    return;
+                }
+                const categoryName = selectedCategory.dataset.name;
+                const id = stationIdInput.value;
+                const name = stationNameInput.value.trim();
+                const url = stationUrlInput.value.trim();
+                const logo = stationLogoInput.value.trim();
+
+                if (!name || !url) {
+                    alert('Station name and URL are required.');
+                    return;
+                }
+
+                const formData = new URLSearchParams();
+                formData.append('category', categoryName);
+                formData.append('name', name);
+                formData.append('url', url);
+                formData.append('logo', logo);
+
+                let apiUrl = '/api/stations';
+                if (id) {
+                    formData.append('id', id);
+                    apiUrl = '/api/stations/update';
+                }
+
+                fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                })
+                .then(() => {
+                    clearForm();
+                    loadStations(categoryName);
+                });
+            });
+
+            clearFormBtn.addEventListener('click', clearForm);
+
+            function clearForm() {
+                stationIdInput.value = '';
+                stationForm.reset();
+            }
+
+            removeStationBtn.addEventListener('click', function() {
+                const selectedCategory = categoryList.querySelector('.selected');
+                const selectedStation = stationList.querySelector('.selected');
+                if (selectedCategory && selectedStation) {
+                    const categoryName = selectedCategory.dataset.name;
+                    const stationId = selectedStation.dataset.id;
+                    const formData = new URLSearchParams();
+                    formData.append('category', categoryName);
+                    formData.append('id', stationId);
+
+                    fetch('/api/stations/delete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: formData
+                    })
+                    .then(() => {
+                        loadStations(categoryName);
+                    });
+                }
+            });
+
+            // XML Export
+            document.getElementById('export-xml').addEventListener('click', function() {
+                window.location.href = '/api/export/xml';
+            });
+
+            // XML Import
+            const importXmlFile = document.getElementById('import-xml-file');
+            document.getElementById('import-xml').addEventListener('click', function() {
+                importXmlFile.click();
+            });
+
+            importXmlFile.addEventListener('change', function() {
+                const file = importXmlFile.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        fetch('/api/import/xml', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/xml',
+                            },
+                            body: e.target.result
+                        })
+                        .then(response => response.text())
+                        .then(message => {
+                            alert(message);
+                            loadCategories(); // Reload categories after import
+                        })
+                        .catch(error => {
+                            console.error('Error importing XML:', error);
+                            alert('Error importing XML.');
+                        });
+                    };
+                    reader.readAsText(file);
+                }
+            });
+
+            // INI Export
+            document.getElementById('export-ini').addEventListener('click', function() {
+                window.location.href = '/api/export/ini';
+            });
+
+            // INI Import
+            const importIniFile = document.getElementById('import-ini-file');
+            document.getElementById('import-ini').addEventListener('click', function() {
+                importIniFile.click();
+            });
+
+            importIniFile.addEventListener('change', function() {
+                const file = importIniFile.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        fetch('/api/import/ini', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'text/plain',
+                            },
+                            body: e.target.result
+                        })
+                        .then(response => response.text())
+                        .then(message => {
+                            alert(message);
+                            loadCategories(); // Reload categories after import
+                        })
+                        .catch(error => {
+                            console.error('Error importing INI:', error);
+                            alert('Error importing INI.');
+                        });
+                    };
+                    reader.readAsText(file);
+                }
+            });
+
+            // YAML Export
+            document.getElementById('export-yaml').addEventListener('click', function() {
+                window.location.href = '/api/export/yaml';
+            });
+
+            // YAML Import
+            const importYamlFile = document.getElementById('import-yaml-file');
+            document.getElementById('import-yaml').addEventListener('click', function() {
+                importYamlFile.click();
+            });
+
+            importYamlFile.addEventListener('change', function() {
+                const file = importYamlFile.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        fetch('/api/import/yaml', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'text/plain',
+                            },
+                            body: e.target.result
+                        })
+                        .then(response => response.text())
+                        .then(message => {
+                            alert(message);
+                            loadCategories(); // Reload categories after import
+                        })
+                        .catch(error => {
+                            console.error('Error importing YAML:', error);
+                            alert('Error importing YAML.');
+                        });
+                    };
+                    reader.readAsText(file);
+                }
+            });
+
+            const searchTermInput = document.getElementById('search-term');
+            const searchRadioBrowserBtn = document.getElementById('search-radiobrowser');
+            const searchTuneInBtn = document.getElementById('search-tunein');
+            const searchResultsList = document.getElementById('search-results');
+
+            searchRadioBrowserBtn.addEventListener('click', function() {
+                const searchTerm = searchTermInput.value.trim();
+                if (searchTerm) {
+                    fetch(`/api/search/radiobrowser?term=${encodeURIComponent(searchTerm)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            searchResultsList.innerHTML = '';
+                            data.forEach(station => {
+                                const li = document.createElement('li');
+                                li.textContent = `${station.name} (${station.country}, ${station.language})`;
+                                li.dataset.name = station.name;
+                                li.dataset.url = station.url;
+                                li.dataset.logo = station.logo;
+                                li.dataset.description = station.description;
+                                li.dataset.country = station.country;
+                                li.dataset.language = station.language;
+                                li.dataset.tags = station.tags;
+                                li.dataset.codec = station.codec;
+                                li.dataset.bitrate = station.bitrate;
+                                li.addEventListener('click', function() {
+                                    const selectedCategory = categoryList.querySelector('.selected');
+                                    if (selectedCategory) {
+                                        const categoryName = selectedCategory.dataset.name;
+                                        const formData = new URLSearchParams();
+                                        formData.append('category', categoryName);
+                                        formData.append('name', station.name);
+                                        formData.append('url', station.url);
+                                        formData.append('logo', station.logo);
+                                        formData.append('description', station.description);
+                                        formData.append('country', station.country);
+                                        formData.append('language', station.language);
+                                        formData.append('tags', station.tags);
+                                        formData.append('codec', station.codec);
+                                        formData.append('bitrate', station.bitrate);
+
+                                        fetch('/api/stations', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/x-www-form-urlencoded',
+                                            },
+                                            body: formData
+                                        })
+                                        .then(() => {
+                                            alert(`Station ${station.name} added to ${categoryName}`);
+                                            loadStations(categoryName);
+                                        });
+                                    } else {
+                                        alert('Please select a category first.');
+                                    }
+                                });
+                                searchResultsList.appendChild(li);
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error searching RadioBrowser:', error);
+                            alert('Error searching RadioBrowser.');
+                        });
+                }
+            });
+
+            searchTuneInBtn.addEventListener('click', function() {
+                const searchTerm = searchTermInput.value.trim();
+                if (searchTerm) {
+                    fetch(`/api/search/tunein?term=${encodeURIComponent(searchTerm)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            searchResultsList.innerHTML = '';
+                            data.forEach(station => {
+                                const li = document.createElement('li');
+                                li.textContent = `${station.name} (${station.description})`;
+                                li.dataset.name = station.name;
+                                li.dataset.url = station.url;
+                                li.dataset.logo = station.logo;
+                                li.dataset.description = station.description;
+                                li.dataset.country = station.country;
+                                li.dataset.language = station.language;
+                                li.dataset.tags = station.tags;
+                                li.dataset.codec = station.codec;
+                                li.dataset.bitrate = station.bitrate;
+                                li.addEventListener('click', function() {
+                                    const selectedCategory = categoryList.querySelector('.selected');
+                                    if (selectedCategory) {
+                                        const categoryName = selectedCategory.dataset.name;
+                                        const formData = new URLSearchParams();
+                                        formData.append('category', categoryName);
+                                        formData.append('name', station.name);
+                                        formData.append('url', station.url);
+                                        formData.append('logo', station.logo);
+                                        formData.append('description', station.description);
+                                        formData.append('country', station.country);
+                                        formData.append('language', station.language);
+                                        formData.append('tags', station.tags);
+                                        formData.append('codec', station.codec);
+                                        formData.append('bitrate', station.bitrate);
+
+                                        fetch('/api/stations', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/x-www-form-urlencoded',
+                                            },
+                                            body: formData
+                                        })
+                                        .then(() => {
+                                            alert(`Station ${station.name} added to ${categoryName}`);
+                                            loadStations(categoryName);
+                                        });
+                                    } else {
+                                        alert('Please select a category first.');
+                                    }
+                                });
+                                searchResultsList.appendChild(li);
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error searching TuneIn:', error);
+                            alert('Error searching TuneIn.');
+                        });
+                }
+            });
+
+            loadCategories();
+        });
+    </script>
+</body>
+</html>

@@ -258,11 +258,13 @@ begin
     OnDataReceived := @HandleDataReceived;
 end;
 
+{$WARN 5024 OFF}
 procedure TLocalHttpClient.HandleDataReceived(Sender : TObject; Const ContentLength, CurrentPos : Int64);
 begin
   if (FMaxDataToReceive>0) and (CurrentPos>FMaxDataToReceive) then
     Self.Terminate;
 end;
+{$WARN 5024 ON}
 
 procedure Logging(ALogType: TLogType; ALogMessage: string);
 begin
@@ -364,6 +366,7 @@ function RemoveEscChars(LInputStr: RawByteString): RawByteString;
 var
   i: integer;
 begin
+  Result := LInputStr;
   for i:=Low(ESC_CHARS) to High(ESC_CHARS) do
     Result:=AnsiReplaceStr(LInputStr,ESC_CHARS[i],'');
 end;

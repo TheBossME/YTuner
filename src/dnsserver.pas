@@ -80,11 +80,13 @@ begin
   end;
 end;
 
+{$WARN 5024 OFF}
 procedure TIdDNSServerProxy.IdDNS_UDPServerDoAfterQuery(ABinding: TIdSocketHandle; ADNSHeader: TDNSHeader; var QueryResult: TIdBytes; var ResultCode: string; Query : TIdBytes);
 var
   LInterceptDN: string;
   LDNQuery: string;
   LQueryResult: TBytes;
+{$WARN 5024 ON}
 
   function ReplaceSpecSymbol(S: String): String;
   var
@@ -104,6 +106,7 @@ var
   end;
 
 begin
+  LQueryResult := [];
   LDNQuery:=ReplaceSpecSymbol(BytesToString(Query,12));
   for LInterceptDN in InterceptDNs.Split([',']) do
     begin

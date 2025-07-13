@@ -189,14 +189,14 @@ begin
       AppendChild(AXMLDoc.CreateElement(VT_XML_STATIONNAME)).AppendChild(AXMLDoc.CreateTextNode(Name));
       AppendChild(AXMLDoc.CreateElement(VT_XML_STATIONURL)).AppendChild(AXMLDoc.CreateTextNode(URL));
       AppendChild(AXMLDoc.CreateElement(VT_XML_STATIONDESC)).AppendChild(AXMLDoc.CreateTextNode(Description));
-      AppendChild(AXMLDoc.CreateElement(VT_XML_LOGO)).AppendChild(AXMLDoc.CreateTextNode(Icon));
-      AppendChild(AXMLDoc.CreateElement(VT_XML_STATIONFORMAT)).AppendChild(AXMLDoc.CreateTextNode(Genre));
-      AppendChild(AXMLDoc.CreateElement(VT_XML_STATIONLOCATION)).AppendChild(AXMLDoc.CreateTextNode(Location));
-      AppendChild(AXMLDoc.CreateElement(VT_XML_STATIONBANDWIDTH)).AppendChild(AXMLDoc.CreateTextNode(Bitrate));
+      AppendChild(AXMLDoc.CreateElement(VT_XML_LOGO)).AppendChild(AXMLDoc.CreateTextNode(string(Icon)));
+      AppendChild(AXMLDoc.CreateElement(VT_XML_STATIONFORMAT)).AppendChild(AXMLDoc.CreateTextNode(string(Genre)));
+      AppendChild(AXMLDoc.CreateElement(VT_XML_STATIONLOCATION)).AppendChild(AXMLDoc.CreateTextNode(string(Location)));
+      AppendChild(AXMLDoc.CreateElement(VT_XML_STATIONBANDWIDTH)).AppendChild(AXMLDoc.CreateTextNode(string(Bitrate)));
       if IndexText(Mime,VTUNER_MIME)>=0 then LCodec:=Mime;
-      AppendChild(AXMLDoc.CreateElement(VT_XML_STATIONMIME)).AppendChild(AXMLDoc.CreateTextNode(LCodec));
+      AppendChild(AXMLDoc.CreateElement(VT_XML_STATIONMIME)).AppendChild(AXMLDoc.CreateTextNode(string(LCodec)));
       AppendChild(AXMLDoc.CreateElement(VT_XML_RELIA)).AppendChild(AXMLDoc.CreateTextNode('3'));
-      AppendChild(AXMLDoc.CreateElement(VT_XML_BOOKMARK)).AppendChild(AXMLDoc.CreateTextNode(Bookmark));
+      AppendChild(AXMLDoc.CreateElement(VT_XML_BOOKMARK)).AppendChild(AXMLDoc.CreateTextNode(string(Bookmark)));
     end;
 end;
 

@@ -640,17 +640,21 @@ begin
             if (Length(AllowedCountries)>0) and (not HaveCommonElements(LAttrName,AllowedCountries)) then Result:=False;
           rbctLanguage:
             if (Length(AllowedLanguages)>0) and (not HaveCommonElements(LAttrName,AllowedLanguages)) then Result:=False;
+        else
+
         end
       else
         Result:=False;
     end;
 end;
 
+{$WARN 5024 OFF}
 function RBStationsAVRFilter(ARBStationJSONObject: TJSONObject; ARBAllCategoryType: TRBAllCategoryTypes; AAVRConfigIdx: integer): boolean;
 var
   LBR: integer = 0;
 begin
   Result:=True;
+{$WARN 5024 ON}
   with ARBStationJSONObject, AVRConfigArray[AAVRConfigIdx], AVRConfigArray[AAVRConfigIdx].RBFilter do
     begin
       case ARBAllCategoryType of
@@ -670,6 +674,7 @@ begin
           if (Length(NotAllowedTags)>0) and (HaveCommonElements(IfThen(Get(API_ATTR_TAGS)='',AVR_FILTER_EMPTY,Get(API_ATTR_TAGS)),NotAllowedTags)) then Result:=False else
           if (Length(AllowedCountries)>0) and (not HaveCommonElements(IfThen(Get(API_ATTR_COUNTRY)='',AVR_FILTER_EMPTY,Get(API_ATTR_COUNTRY)),AllowedCountries)) then Result:=False else
           if (Length(AllowedLanguages)>0) and (not HaveCommonElements(IfThen(Get(API_ATTR_LANGUAGE)='',AVR_FILTER_EMPTY,Get(API_ATTR_LANGUAGE)),AllowedLanguages)) then Result:=False;
+      else
       end;
 
       if Result then
@@ -717,6 +722,8 @@ begin
                          end;
                        Result:=LoadRBObjects(ARBObjectsList,CRBRecords,AStart,AHowMany);
                      end;
+      else
+
       end;
       if Result>0 then
         Logging(ltDebug, string.Join(' ',[MSG_CACHE,MSG_LOADED,ACacheName]))
@@ -780,6 +787,8 @@ begin
                         end;
                     end;
                   end;
+      else
+
       end;
       if Result then
         Logging(ltDebug, string.Join(' ',[MSG_CACHE,MSG_SAVED,ACacheName]))
@@ -1081,6 +1090,7 @@ var
   var
     LLen: Word;
   begin
+    AStrValue := '';
     ACacheStream.Read(LLen,SizeOf(Word));
     if LLen>0 then
       AStrValue:=ACacheStream.ReadString(LLen);
@@ -1096,6 +1106,7 @@ var
     LLen: Word;
     LDummyValue: string;
   begin
+    LDummyValue := '';
     ACacheStream.Read(LLen,SizeOf(Word));
     if LLen>0 then
       LDummyValue:=ACacheStream.ReadString(LLen);

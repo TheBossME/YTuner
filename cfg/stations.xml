@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MyStations>		
+  <Version>1.1</Version>
+  <ListOfItems>
+    <Item id="MS_C4E9D5590675" idx="0">
+      <Name>Schwarzwald Radio</Name>
+      <URL>https://frontend.streamonkey.net/fho-schwarzwaldradiohifi</URL>
+      <URLResolved>https://edge03.streamonkey.net/fho-schwarzwaldradiohifi</URLResolved>
+      <Description>Deutschlands Oldies-Radio</Description>
+      <Logo/>
+      <Genres>Schwarzwald Radio</Genres>
+      <Languages>german</Languages>
+      <Location>Germany</Location>
+      <Mime>audio/aac</Mime>
+      <Codec>AAC</Codec>
+      <Bitrate>128</Bitrate>
+      <LastCheckedOK>1</LastCheckedOK>
+      <LastCheckedOKTime>2025-06-10 16:31:48</LastCheckedOKTime>
+      <LastCheckedTime>2025-06-10 16:31:48</LastCheckedTime>
+    </Item>
+  <ListOfItems/>
+<MyStations/>

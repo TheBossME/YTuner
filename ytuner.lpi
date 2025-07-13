@@ -524,6 +524,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
+      <OtherUnitFiles Value="/home/frhbvale/fpcupdeluxe/fpcsrc/packages/fcl-base/src/;/home/frhbvale/fpcupdeluxe/fpcsrc/packages/fcl-yaml/src/;/home/frhbvale/fpcupdeluxe/fpcsrc/packages/fcl-xml/src/"/>
       <UnitOutputDirectory Value="lib\$(BuildMode)\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

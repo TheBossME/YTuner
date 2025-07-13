@@ -91,7 +91,7 @@ begin
                   if LAVRConfigIdx>=0 then
                     with AVRConfigArray[LAVRConfigIdx].Translator do
                       if ReplaceUTF8Latin1Supplement or ReplaceUTF8Latin1ExtendedA or ReplaceUTF8Latin1ExtendedB then
-                        LastChild.FindNode(VT_XML_STATIONNAME).FirstChild.NodeValue:=ReplaceDiacritics(LastChild.FindNode(VT_XML_STATIONNAME).FirstChild.NodeValue,LAVRConfigIdx);
+                        LastChild.FindNode(VT_XML_STATIONNAME).FirstChild.NodeValue:=string(ReplaceDiacritics(LastChild.FindNode(VT_XML_STATIONNAME).FirstChild.NodeValue,LAVRConfigIdx));
                 end;
             end;
           WriteXML(LXMLBookmarkPart,AXMLStream);
